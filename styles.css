@@ -379,7 +379,11 @@ body.menu-open { overflow: hidden; }
   object-fit: cover;
   z-index: -2;
   filter: saturate(.82) brightness(.9);
+  opacity: 0;
+  transition: opacity 1.8s ease;
 }
+
+.hero-video.is-active { opacity: 1; }
 
 .hero-shade {
   position: absolute;
@@ -417,6 +421,18 @@ body.menu-open { overflow: hidden; }
 }
 
 .hero h1 em { font-style: italic; color: var(--brass); }
+
+.hero h1 .caret {
+  display: inline-block;
+  width: clamp(2px, .04em, 5px);
+  height: .95em;
+  margin-left: .1em;
+  vertical-align: -.06em;
+  background: var(--brass);
+  animation: caretBlink 1.1s steps(2, start) infinite;
+}
+
+@keyframes caretBlink { to { visibility: hidden; } }
 
 .hero-sub {
   margin: 22px 0 0;
@@ -1079,6 +1095,7 @@ body.menu-open .sticky-cta { transform: translateY(110%); }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  .hero h1 .caret { display: none; }
   .marquee-track { animation: none; }
   .scroll-cue span { animation: none; }
   .service-media img { transition: none; }

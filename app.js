@@ -124,21 +124,80 @@
     window.addEventListener('resize', updateStickyCta);
   }
 
-  /* ---------- Hero video: respect motion prefs + off-screen pause ---------- */
-  var video = document.querySelector('.hero-video');
-  if (video) {
+  /* ---------- Hero videos: lounge/kitchen crossfade ---------- */
+  var videos = Array.prototype.slice.call(document.querySelectorAll('.hero-video'));
+  if (videos.length) {
     if (prefersReducedMotion) {
-      video.removeAttribute('autoplay');
-      video.pause();
-    } else if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (entries) {
-        if (entries[0].isIntersecting) {
-          video.play().catch(function () { /* poster remains */ });
-        } else {
-          video.pause();
+      videos.forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
+    } else {
+      var current = 0;
+      setInterval(function () {
+        if (document.hidden || videos.length < 2) return;
+        var next = (current + 1) % videos.length;
+        videos[next].play().catch(function () { /* keep showing current */ });
+        videos[current].classList.remove('is-active');
+        videos[next].classList.add('is-active');
+        current = next;
+      }, 9000);
+      if ('IntersectionObserver' in window) {
+        var heroEl = document.querySelector('.hero');
+        if (heroEl) {
+          new IntersectionObserver(function (entries) {
+            videos.forEach(function (v) {
+              if (entries[0].isIntersecting) v.play().catch(function () { /* poster remains */ });
+              else v.pause();
+            });
+          }, { threshold: 0.05 }).observe(heroEl);
         }
-      }, { threshold: 0.05 }).observe(video);
+      }
     }
+  }
+
+  /* ---------- Hero headline rotator ---------- */
+  var rotator = document.getElementById('rotator');
+  if (rotator && !prefersReducedMotion) {
+    var phrases = ['we clean.', 'we organise.', 'we polish.', 'we refresh.', 'we detail.'];
+    var phrase = 0;
+    var char = phrases[0].length;
+    var deleting = false;
+    var heroVisible = true;
+    if ('IntersectionObserver' in window) {
+      var heroNode = document.querySelector('.hero');
+      if (heroNode) {
+        new IntersectionObserver(function (entries) {
+          heroVisible = entries[0].isIntersecting;
+        }, { threshold: 0 }).observe(heroNode);
+      }
+    }
+    function tick() {
+      var delay = 55;
+      if (heroVisible && !document.hidden) {
+        var full = phrases[phrase];
+        if (!deleting) {
+          char++;
+          if (char >= full.length) {
+            char = full.length;
+            deleting = true;
+            delay = 2200;
+          } else {
+            delay = 45 + Math.random() * 60;
+          }
+        } else {
+          char--;
+          if (char <= 0) {
+            char = 0;
+            deleting = false;
+            phrase = (phrase + 1) % phrases.length;
+            delay = 350;
+          } else {
+            delay = 28;
+          }
+        }
+        rotator.textContent = phrases[phrase].slice(0, char);
+      }
+      setTimeout(tick, delay);
+    }
+    setTimeout(tick, 1800);
   }
 
   /* ---------- Quote form → composed email ---------- */
