@@ -987,6 +987,21 @@ body.menu-open { overflow: hidden; }
 
 .form-fallback a { color: var(--muted); }
 
+.hp {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.form-submit:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
 /* ---------- Footer ---------- */
 
 .footer {

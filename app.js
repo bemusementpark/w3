@@ -237,21 +237,54 @@
         return;
       }
 
-      var subject = 'Cleaning quote request — ' + service.value;
-      var lines = [
-        'Name: ' + name.value.trim(),
-        'Email: ' + email.value.trim(),
-        'Phone: ' + (phone.value.trim() || '—'),
-        'Service: ' + service.value,
-        '',
-        message.value.trim()
-      ];
-      window.location.href =
-        'mailto:bianca@whileyouwork.com.au?subject=' + encodeURIComponent(subject) +
-        '&body=' + encodeURIComponent(lines.join('\n'));
-
       var firstName = name.value.trim().split(' ')[0];
-      setNote('Thanks ' + firstName + ' — your email app should have opened with everything filled in. Just press send, and we\u2019ll be in touch.', 'success');
+      var honey = form.querySelector('input[name="_honey"]');
+      if (honey && honey.value) {
+        setNote('Thanks ' + firstName + ' — we\u2019ll be in touch shortly.', 'success');
+        form.reset();
+        return;
+      }
+
+      var submitBtn = form.querySelector('.form-submit');
+      var originalLabel = submitBtn ? submitBtn.textContent : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending\u2026';
+      }
+      setNote('', '');
+
+      fetch('https://formsubmit.co/ajax/bianca@whileyouwork.com.au', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          name: name.value.trim(),
+          email: email.value.trim(),
+          phone: phone.value.trim() || '—',
+          service: service.value,
+          message: message.value.trim(),
+          _subject: 'New quote request: ' + service.value + ' — ' + name.value.trim(),
+          _template: 'table',
+          _captcha: 'false',
+          _autoresponse: 'Thanks for contacting While You Work! We have received your enquiry and will be back to you with a free quote shortly. — Bianca, While You Work Cleaning Services'
+        })
+      }).then(function (res) {
+        if (!res.ok) throw new Error('send failed');
+        return res.json();
+      }).then(function () {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalLabel;
+        }
+        form.reset();
+        if (serviceSelect) serviceSelect.classList.remove('filled');
+        setNote('Thanks ' + firstName + ' — your enquiry is on its way. We\u2019ll be in touch with your free quote.', 'success');
+      }).catch(function () {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalLabel;
+        }
+        setNote('Hmm, that didn\u2019t send. Please email bianca@whileyouwork.com.au or call 0413 083 995 instead.', 'error');
+      });
     });
 
     form.querySelectorAll('input, select, textarea').forEach(function (field) {
