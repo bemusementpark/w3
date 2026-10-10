@@ -1022,6 +1022,83 @@ body.menu-open { overflow: hidden; }
   cursor: wait;
 }
 
+.quote-form {
+  transition: opacity .45s ease, transform .45s var(--ease);
+}
+
+.quote-form.is-leaving {
+  opacity: 0;
+  transform: translateY(14px);
+  pointer-events: none;
+}
+
+.quote-form[hidden],
+.form-success[hidden] {
+  display: none;
+}
+
+.form-success {
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: clamp(44px, 6vw, 76px) clamp(24px, 4vw, 44px);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.form-success svg {
+  width: 60px;
+  height: 60px;
+  fill: none;
+  stroke: var(--brass);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.form-success h3 {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(1.7rem, 4vw, 2.2rem);
+}
+
+.form-success p {
+  margin: 0;
+  color: var(--muted);
+  max-width: 26rem;
+}
+
+.form-success:not([hidden]) {
+  animation: panelIn .6s var(--ease) both;
+}
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+
+.form-success:not([hidden]) svg circle,
+.form-success:not([hidden]) svg path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+
+.form-success:not([hidden]) svg circle {
+  animation: drawStroke .7s var(--ease) .15s forwards;
+}
+
+.form-success:not([hidden]) svg path {
+  animation: drawStroke .45s var(--ease) .6s forwards;
+}
+
+@keyframes drawStroke {
+  to { stroke-dashoffset: 0; }
+}
+
 /* ---------- Footer ---------- */
 
 .footer {
@@ -1131,6 +1208,10 @@ body.menu-open .sticky-cta { transform: translateY(110%); }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .hero h1 .caret { display: none; }
+  .quote-form { transition: none; }
+  .form-success:not([hidden]) { animation: none; }
+  .form-success svg circle,
+  .form-success svg path { animation: none; stroke-dashoffset: 0; }
   .marquee-track { animation: none; }
   .scroll-cue span { animation: none; }
   .service-media img { transition: none; }
@@ -1472,6 +1553,13 @@ body.menu-open .sticky-cta { transform: translateY(110%); }
         <button type="submit" class="btn btn-solid btn-large form-submit">Send enquiry</button>
         <p class="form-fallback">Prefer email? Reach us directly at <a href="mailto:bianca@whileyouwork.com.au">bianca@whileyouwork.com.au</a> or call <a href="tel:+61413083995">0413 083 995</a>.</p>
       </form>
+
+      <div class="form-success" id="form-success" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" pathLength="100"/><path d="m7.5 12.5 3.5 3.5 5.5-7" pathLength="100"/></svg>
+        <h3>Enquiry sent.</h3>
+        <p id="form-success-msg">Thanks — we&rsquo;ll be in touch with your free quote shortly.</p>
+        <button type="button" class="btn btn-outline" id="form-again">Send another enquiry</button>
+      </div>
     </section>
   </main>
 
@@ -1697,14 +1785,34 @@ body.menu-open .sticky-cta { transform: translateY(110%); }
     setTimeout(tick, 1800);
   }
 
-  /* ---------- Quote form → composed email ---------- */
+  /* ---------- Quote form → FormSubmit send ---------- */
   var form = document.getElementById('quote-form');
   var note = document.getElementById('form-note');
+  var successPanel = document.getElementById('form-success');
+  var successMsg = document.getElementById('form-success-msg');
+  var againBtn = document.getElementById('form-again');
 
   function setNote(message, kind) {
     if (!note) return;
     note.textContent = message;
     note.className = 'form-note' + (kind ? ' ' + kind : '');
+  }
+
+  function showSuccess(formEl, firstName) {
+    setNote('', '');
+    if (successMsg) successMsg.textContent = 'Thanks ' + firstName + ' — we\u2019ll be in touch with your free quote shortly.';
+    if (!formEl || !successPanel) return;
+    if (prefersReducedMotion) {
+      formEl.hidden = true;
+      successPanel.hidden = false;
+      return;
+    }
+    formEl.classList.add('is-leaving');
+    setTimeout(function () {
+      formEl.hidden = true;
+      formEl.classList.remove('is-leaving');
+      successPanel.hidden = false;
+    }, 460);
   }
 
   if (form) {
@@ -1737,8 +1845,9 @@ body.menu-open .sticky-cta { transform: translateY(110%); }
       var firstName = name.value.trim().split(' ')[0];
       var honey = form.querySelector('input[name="_honey"]');
       if (honey && honey.value) {
-        setNote('Thanks ' + firstName + ' — we\u2019ll be in touch shortly.', 'success');
         form.reset();
+        if (serviceSelect) serviceSelect.classList.remove('filled');
+        showSuccess(form, firstName);
         return;
       }
 
@@ -1774,7 +1883,7 @@ body.menu-open .sticky-cta { transform: translateY(110%); }
         }
         form.reset();
         if (serviceSelect) serviceSelect.classList.remove('filled');
-        setNote('Thanks ' + firstName + ' — your enquiry is on its way. We\u2019ll be in touch with your free quote.', 'success');
+        showSuccess(form, firstName);
       }).catch(function () {
         if (submitBtn) {
           submitBtn.disabled = false;
@@ -1790,6 +1899,17 @@ body.menu-open .sticky-cta { transform: translateY(110%); }
         if (note && note.classList.contains('error')) setNote('', '');
       });
     });
+
+    if (againBtn) {
+      againBtn.addEventListener('click', function () {
+        if (successPanel) successPanel.hidden = true;
+        form.hidden = false;
+        form.classList.remove('is-leaving');
+        setNote('', '');
+        var first = form.querySelector('input[name="name"]');
+        if (first) first.focus();
+      });
+    }
   }
 })();
 

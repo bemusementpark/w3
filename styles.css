@@ -1002,6 +1002,83 @@ body.menu-open { overflow: hidden; }
   cursor: wait;
 }
 
+.quote-form {
+  transition: opacity .45s ease, transform .45s var(--ease);
+}
+
+.quote-form.is-leaving {
+  opacity: 0;
+  transform: translateY(14px);
+  pointer-events: none;
+}
+
+.quote-form[hidden],
+.form-success[hidden] {
+  display: none;
+}
+
+.form-success {
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: clamp(44px, 6vw, 76px) clamp(24px, 4vw, 44px);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.form-success svg {
+  width: 60px;
+  height: 60px;
+  fill: none;
+  stroke: var(--brass);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.form-success h3 {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(1.7rem, 4vw, 2.2rem);
+}
+
+.form-success p {
+  margin: 0;
+  color: var(--muted);
+  max-width: 26rem;
+}
+
+.form-success:not([hidden]) {
+  animation: panelIn .6s var(--ease) both;
+}
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+
+.form-success:not([hidden]) svg circle,
+.form-success:not([hidden]) svg path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+
+.form-success:not([hidden]) svg circle {
+  animation: drawStroke .7s var(--ease) .15s forwards;
+}
+
+.form-success:not([hidden]) svg path {
+  animation: drawStroke .45s var(--ease) .6s forwards;
+}
+
+@keyframes drawStroke {
+  to { stroke-dashoffset: 0; }
+}
+
 /* ---------- Footer ---------- */
 
 .footer {
@@ -1111,6 +1188,10 @@ body.menu-open .sticky-cta { transform: translateY(110%); }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .hero h1 .caret { display: none; }
+  .quote-form { transition: none; }
+  .form-success:not([hidden]) { animation: none; }
+  .form-success svg circle,
+  .form-success svg path { animation: none; stroke-dashoffset: 0; }
   .marquee-track { animation: none; }
   .scroll-cue span { animation: none; }
   .service-media img { transition: none; }

@@ -200,14 +200,34 @@
     setTimeout(tick, 1800);
   }
 
-  /* ---------- Quote form → composed email ---------- */
+  /* ---------- Quote form → FormSubmit send ---------- */
   var form = document.getElementById('quote-form');
   var note = document.getElementById('form-note');
+  var successPanel = document.getElementById('form-success');
+  var successMsg = document.getElementById('form-success-msg');
+  var againBtn = document.getElementById('form-again');
 
   function setNote(message, kind) {
     if (!note) return;
     note.textContent = message;
     note.className = 'form-note' + (kind ? ' ' + kind : '');
+  }
+
+  function showSuccess(formEl, firstName) {
+    setNote('', '');
+    if (successMsg) successMsg.textContent = 'Thanks ' + firstName + ' — we\u2019ll be in touch with your free quote shortly.';
+    if (!formEl || !successPanel) return;
+    if (prefersReducedMotion) {
+      formEl.hidden = true;
+      successPanel.hidden = false;
+      return;
+    }
+    formEl.classList.add('is-leaving');
+    setTimeout(function () {
+      formEl.hidden = true;
+      formEl.classList.remove('is-leaving');
+      successPanel.hidden = false;
+    }, 460);
   }
 
   if (form) {
@@ -240,8 +260,9 @@
       var firstName = name.value.trim().split(' ')[0];
       var honey = form.querySelector('input[name="_honey"]');
       if (honey && honey.value) {
-        setNote('Thanks ' + firstName + ' — we\u2019ll be in touch shortly.', 'success');
         form.reset();
+        if (serviceSelect) serviceSelect.classList.remove('filled');
+        showSuccess(form, firstName);
         return;
       }
 
@@ -277,7 +298,7 @@
         }
         form.reset();
         if (serviceSelect) serviceSelect.classList.remove('filled');
-        setNote('Thanks ' + firstName + ' — your enquiry is on its way. We\u2019ll be in touch with your free quote.', 'success');
+        showSuccess(form, firstName);
       }).catch(function () {
         if (submitBtn) {
           submitBtn.disabled = false;
@@ -293,5 +314,16 @@
         if (note && note.classList.contains('error')) setNote('', '');
       });
     });
+
+    if (againBtn) {
+      againBtn.addEventListener('click', function () {
+        if (successPanel) successPanel.hidden = true;
+        form.hidden = false;
+        form.classList.remove('is-leaving');
+        setNote('', '');
+        var first = form.querySelector('input[name="name"]');
+        if (first) first.focus();
+      });
+    }
   }
 })();
