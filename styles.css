@@ -513,9 +513,16 @@ body.menu-open { overflow: hidden; }
 .marquee-track {
   display: flex;
   align-items: center;
-  gap: 34px;
   width: max-content;
   animation: marquee 36s linear infinite;
+}
+
+.marquee-group {
+  display: flex;
+  align-items: center;
+  gap: 34px;
+  padding-right: 34px;
+  flex-shrink: 0;
 }
 
 .marquee-track span {
@@ -536,7 +543,7 @@ body.menu-open { overflow: hidden; }
 }
 
 @keyframes marquee {
-  to { transform: translateX(calc(-50% - 17px)); }
+  to { transform: translateX(var(--marquee-shift, -50%)); }
 }
 
 /* ---------- Sections ---------- */
@@ -568,6 +575,7 @@ body.menu-open { overflow: hidden; }
 }
 
 .section-head h2,
+.careers-copy h2,
 .difference-copy h2,
 .cta-inner h2,
 .contact-copy h2 {
@@ -742,6 +750,93 @@ body.menu-open { overflow: hidden; }
 }
 
 .steps p { margin: 0; color: var(--muted); font-size: .95rem; max-width: 26rem; }
+
+/* ---------- Careers ---------- */
+
+.careers {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 48px;
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+.role-card {
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: clamp(28px, 4vw, 44px);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.role-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 22px;
+}
+
+.role-card h3 {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 1.6rem;
+}
+
+.role-flag {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--brass);
+  border: 1px solid rgba(200, 161, 94, .5);
+  border-radius: 999px;
+  padding: 6px 14px;
+  white-space: nowrap;
+}
+
+.role-facts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  color: var(--muted);
+  font-size: .95rem;
+}
+
+.role-facts li {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.role-facts li::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  background: var(--brass);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+.role-apply {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.role-note {
+  margin: 0;
+  color: var(--faint);
+  font-size: .85rem;
+  line-height: 1.6;
+}
 
 /* ---------- Rooms strip ---------- */
 
@@ -1180,6 +1275,7 @@ body.menu-open .sticky-cta { transform: translateY(110%); }
 @media (min-width: 1100px) {
   .service-grid { grid-template-columns: repeat(4, 1fr); gap: 18px; }
   .difference { grid-template-columns: 1fr 1.05fr; gap: clamp(48px, 6vw, 96px); }
+  .careers { grid-template-columns: 1fr 1fr; gap: clamp(48px, 6vw, 90px); }
   .contact { grid-template-columns: 5fr 7fr; gap: clamp(48px, 6vw, 90px); align-items: start; }
 }
 

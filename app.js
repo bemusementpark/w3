@@ -78,6 +78,25 @@
     revealEls.forEach(function (el) { el.classList.add('in'); });
   }
 
+  /* ---------- Marquee: clone groups to cover wide screens, loop by one group ---------- */
+  var marqueeTrack = document.querySelector('.marquee-track');
+  if (marqueeTrack && !prefersReducedMotion) {
+    var marqueeGroup = marqueeTrack.querySelector('.marquee-group');
+    function fillMarquee() {
+      if (!marqueeGroup) return;
+      var period = marqueeGroup.offsetWidth;
+      if (!period) return;
+      while (marqueeTrack.scrollWidth < window.innerWidth + period) {
+        marqueeTrack.appendChild(marqueeGroup.cloneNode(true));
+      }
+      marqueeTrack.style.setProperty('--marquee-shift', -period + 'px');
+    }
+    fillMarquee();
+    window.addEventListener('load', fillMarquee);
+    window.addEventListener('resize', fillMarquee);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fillMarquee);
+  }
+
   /* ---------- Service pre-select from cards ---------- */
   var serviceSelect = document.getElementById('service-select');
   if (serviceSelect) {
